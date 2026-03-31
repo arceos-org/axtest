@@ -1,0 +1,22 @@
+[workspace]
+resolver = "2"
+members = ["axtest", "axtest_macros"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+authors = [
+    "Yuekai Jia <equation618@gmail.com>", 
+    "Debin <luodeb@outlook.com>"
+]
+license = "Apache-2.0"
+homepage = "https://github.com/arceos-org/arceos"
+documentation = "https://arceos-org.github.io/axtest"
+repository = "https://github.com/arceos-org/axtest"
+categories = ["os", "no-std", "unittests"]
+keywords = ["os", "no-std", "unittests"]
+
+[workspace.dependencies]
+axtest = { path = "axtest" }
+axtest_macros = { path = "axtest_macros" }
+log = "0.4"

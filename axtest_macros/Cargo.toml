@@ -1,0 +1,17 @@
+[package]
+name = "axtest_macros"
+description = "Macros to facilitate white-box unit testing for ArceOS."
+documentation = "https://docs.rs/axtest_macros"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+
+[lib]
+proc-macro = true
