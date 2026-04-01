@@ -13,3 +13,4 @@ categories.workspace = true
 
 [dependencies]
 axtest_macros.workspace = true
+axlog.workspace = true
