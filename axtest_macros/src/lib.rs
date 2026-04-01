@@ -77,29 +77,24 @@ pub fn def_mod(attr: TokenStream, item: TokenStream) -> TokenStream {
         (false, false)
     };
 
-    let init_call = if has_init {
-        quote! { axtest_init(sym); }
+    let init_hook = if has_init {
+        quote! { Some(axtest_init as fn(axtest::AxTestDescriptor)) }
     } else {
-        quote! {}
+        quote! { None }
     };
-    let exit_call = if has_exit {
-        quote! { axtest_exit(sym); }
+    let exit_hook = if has_exit {
+        quote! { Some(axtest_exit as fn(axtest::AxTestDescriptor)) }
     } else {
-        quote! {}
+        quote! { None }
     };
 
     if let Some((_, items)) = &mut item.content {
         items.push(syn::parse_quote! {
-            #[doc(hidden)]
-            fn __axtest_mod_call_init(sym: axtest::AxTestDescriptor) {
-                #init_call
-            }
-        });
-        items.push(syn::parse_quote! {
-            #[doc(hidden)]
-            fn __axtest_mod_call_exit(sym: axtest::AxTestDescriptor) {
-                #exit_call
-            }
+            #[used]
+            #[unsafe(link_section = ".axtest_mod_hooks")]
+            #[allow(non_upper_case_globals)]
+            static __axtest_mod_hooks: axtest::AxTestModHookDescriptor =
+                axtest::AxTestModHookDescriptor::new(module_path!(), #init_hook, #exit_hook);
         });
     }
 
@@ -254,7 +249,7 @@ pub fn def_test(attr: TokenStream, item: TokenStream) -> TokenStream {
     let expanded = if has_return_type {
         quote! {
             #[used]
-            #[unsafe(link_section = ".axtest")]
+            #[unsafe(link_section = ".axtest_desc")]
             #[allow(non_upper_case_globals)]
             static #static_name: axtest::AxTestDescriptor = axtest::AxTestDescriptor::new(
                 #fn_name_str,
@@ -269,18 +264,18 @@ pub fn def_test(attr: TokenStream, item: TokenStream) -> TokenStream {
             #(#fn_attrs)*
             fn #fn_name() -> axtest::AxTestResult {
                 let __axtest_desc = #static_name;
-                __axtest_mod_call_init(__axtest_desc);
+                axtest::call_module_init(module_path!(), __axtest_desc);
                 let __axtest_result = (|| -> axtest::AxTestResult {
                     #(#fn_stmts)*
                 })();
-                __axtest_mod_call_exit(__axtest_desc);
+                axtest::call_module_exit(module_path!(), __axtest_desc);
                 __axtest_result
             }
         }
     } else {
         quote! {
             #[used]
-            #[unsafe(link_section = ".axtest")]
+            #[unsafe(link_section = ".axtest_desc")]
             #[allow(non_upper_case_globals)]
             static #static_name: axtest::AxTestDescriptor = axtest::AxTestDescriptor::new(
                 #fn_name_str,
@@ -295,12 +290,12 @@ pub fn def_test(attr: TokenStream, item: TokenStream) -> TokenStream {
             #(#fn_attrs)*
             fn #fn_name() -> axtest::AxTestResult {
                 let __axtest_desc = #static_name;
-                __axtest_mod_call_init(__axtest_desc);
+                axtest::call_module_init(module_path!(), __axtest_desc);
                 let __axtest_result = (|| -> axtest::AxTestResult {
                     #(#fn_stmts)*
                     axtest::AxTestResult::Ok
                 })();
-                __axtest_mod_call_exit(__axtest_desc);
+                axtest::call_module_exit(module_path!(), __axtest_desc);
                 __axtest_result
             }
         }

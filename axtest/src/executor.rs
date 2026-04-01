@@ -275,27 +275,15 @@ impl AxTestInitBuilder {
             match result {
                 TestRunResult::Ok => {
                     passed += 1;
-                    ax_println!("ok {} {}::{}", case_no, test.module, test.name);
+                    ax_println!("ok {} {}", case_no, test.name);
                 }
                 TestRunResult::Failed(reason) => {
                     failed += 1;
-                    ax_println!(
-                        "not ok {} {}::{} # {}",
-                        case_no,
-                        test.module,
-                        test.name,
-                        reason
-                    );
+                    ax_println!("not ok {} {} # {}", case_no, test.name, reason);
                 }
                 TestRunResult::Ignored => {
                     ignored += 1;
-                    ax_println!(
-                        "ok {} {}::{} # SKIP {}",
-                        case_no,
-                        test.module,
-                        test.name,
-                        test.ignore_reason
-                    );
+                    ax_println!("ok {} {} # SKIP {}", case_no, test.name, test.ignore_reason);
                 }
             }
         }
